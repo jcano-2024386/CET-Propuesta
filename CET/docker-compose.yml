@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: cet_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: cet_clinica
+
+  backend:
+    build: ./backend
+    container_name: cet_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      URI_MONGO: mongodb://mongodb:27017/cet_clinica
+      JWT_SECRET: cet_kinal_secret_key_2025
+      JWT_EXPIRES_IN: 24h
+      NODE_ENV: production
+      FRONTEND_URL: http://localhost:5173
+    depends_on:
+      - mongodb
+
+  frontend:
+    build: ./frontend
+    container_name: cet_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
